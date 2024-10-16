@@ -9,14 +9,15 @@ type SidebarType = {
 } 
 
 export default function Sidebar(props: SidebarType) {
-  const noteElements = props.notes.map((note, index) => (
+  const noteElements = props.notes.map((note) => ( 
     <div key={note.id}>
       <div
         className={`title ${
           note.id === props.currentNote.id ? "selected-note" : ""}`}
         onClick={() => props.setCurrentNoteId(note.id)}
       >
-        <h4 className="text-snippet">Note {index + 1}</h4>
+        {/* this will display the title of our note when it finds new line ("\n") */}
+        <h4 className="text-snippet">{note.body.split("\n")[0]}</h4>
       </div>
     </div>
   ))
