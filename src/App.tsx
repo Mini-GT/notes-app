@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import Sidebar from "./components/Sidebar"
 import Editor from "./components/Editor"
 // import { data } from "./data"
@@ -51,11 +51,26 @@ export default function App() {
   }
   
   function updateNote(text: string) {
-    setNotes(oldNotes => oldNotes.map(oldNote => {
-    return oldNote.id === currentNoteId
-      ? { ...oldNote, body: text }
-      : oldNote
-    }))
+      // bumps the recent note at the top
+      setNotes(oldNotes => {
+        const newNotes: NewNoteType[] = [] // create new notes
+        oldNotes.map((note, index) => { // maps the note
+          if(note.id === currentNoteId) { // check if it matches the current note
+            newNotes.unshift({ ...oldNotes[index], body: text }) //adds the new/edited note to the top of the arr
+          } else {
+            newNotes.push(note) // if its not the edited note, adds to the last array
+          }
+        })
+        return newNotes;
+      })
+
+    //doesnt bump the recent note at the top
+    // setNotes(oldNotes => 
+    // oldNotes.map((oldNote) => {
+    // return oldNote.id === currentNoteId
+    //   ? { ...oldNote, body: text }
+    //   : oldNote
+    // }))
   }
   
   function findCurrentNote() {
