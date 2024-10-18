@@ -73,9 +73,9 @@ export default function App() {
     // }))
   }
 
-  function deleteNote(index: number) {
+  function deleteNote(noteId: string) {
     //a better approach when removing the selected note
-    setNotes((oldNotes) => oldNotes.filter((_, i) => i !== index));
+    setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
 
     // removes the note selected
     // setNotes((oldNotes) => {

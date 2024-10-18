@@ -6,11 +6,11 @@ type SidebarType = {
   currentNote: NewNoteType
   setCurrentNoteId: Dispatch<SetStateAction<string>>
   newNote: () => void
-  deleteNote: (index: number) => void
+  deleteNote: (noteId: string) => void
 } 
 
 export default function Sidebar(props: SidebarType) {
-  const noteElements = props.notes.map((note, index) => ( 
+  const noteElements = props.notes.map((note) => ( 
     <div key={note.id}>
       <div
         className={`title ${
@@ -21,7 +21,7 @@ export default function Sidebar(props: SidebarType) {
         <h4 className="text-snippet">{note.body.split("\n")[0]}</h4>
         <button 
           className="delete-btn"
-          onClick={() => props.deleteNote(index)}
+          onClick={() => props.deleteNote(note.id)}
         >
           <i className="gg-trash trash-icon"></i>
         </button>
