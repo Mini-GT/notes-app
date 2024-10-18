@@ -6,6 +6,7 @@ type SidebarType = {
   currentNote: NewNoteType
   setCurrentNoteId: Dispatch<SetStateAction<string>>
   newNote: () => void
+  deleteNote: (noteId: string) => void
 } 
 
 export default function Sidebar(props: SidebarType) {
@@ -18,6 +19,12 @@ export default function Sidebar(props: SidebarType) {
       >
         {/* this will display the title of our note when it finds new line ("\n") */}
         <h4 className="text-snippet">{note.body.split("\n")[0]}</h4>
+        <button 
+          className="delete-btn"
+          onClick={() => props.deleteNote(note.id)}
+        >
+          <i className="gg-trash trash-icon"></i>
+        </button>
       </div>
     </div>
   ))

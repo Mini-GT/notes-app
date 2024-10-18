@@ -72,6 +72,18 @@ export default function App() {
     //   : oldNote
     // }))
   }
+
+  function deleteNote(noteId: string) {
+    //a better approach when removing the selected note
+    setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
+
+    // removes the note selected
+    // setNotes((oldNotes) => {
+    //   const newNotes = [...oldNotes];
+    //   newNotes.splice(index, 1);
+    //   return newNotes
+    // })
+  }
   
   function findCurrentNote() {
     return notes.find(note => {
@@ -94,6 +106,7 @@ export default function App() {
           currentNote={findCurrentNote()}
           setCurrentNoteId={setCurrentNoteId}
           newNote={createNewNote}
+          deleteNote={deleteNote}
         />
         {
           currentNoteId && 
