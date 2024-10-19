@@ -10,7 +10,8 @@ type SidebarType = {
 } 
 
 export default function Sidebar(props: SidebarType) {
-  const noteElements = props.notes.map((note) => ( 
+  
+  const noteElements = props.notes.map((note) => (
     <div key={note.id}>
       <div
         className={`title ${
@@ -18,7 +19,7 @@ export default function Sidebar(props: SidebarType) {
         onClick={() => props.setCurrentNoteId(note.id)}
       >
         {/* this will display the title of our note when it finds new line ("\n") */}
-        <h4 className="text-snippet">{note.body.split("\n")[0]}</h4>
+        <h4 className="text-snippet">{(note.body ?? "").split("\n")[0]}</h4>
         <button 
           className="delete-btn"
           onClick={() => props.deleteNote(note.id)}
