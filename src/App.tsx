@@ -5,7 +5,7 @@ import Editor from "./components/Editor"
 import Split from "react-split"
 import {nanoid} from "nanoid"
 import { NewNoteType } from "./utility/types"
-import { onSnapshot } from "firebase/firestore"
+import { onSnapshot, addDoc, doc } from "firebase/firestore"
 import { notesCollection } from "./backend/firebase"
 
 function loadFromStorage() {
@@ -26,7 +26,9 @@ function saveToLocalStorage(notesObj: NewNoteType[]) {
 export default function App() {
   //lazy initialize: make the state into a callback so it will only render once and wont re render when there is change in the component (check example 2)
   //this is usefull when we are loading that takes up a lot of work to do such as getting local storage or data from api
-  const [notes, setNotes] = useState<NewNoteType[]>(() => loadFromStorage() || [])
+  //const [notes, setNotes] = useState<NewNoteType[]>(() => loadFromStorage() || [])
+  const [notes, setNotes] = useState<NewNoteType[]>([]) // we are now grabbing the data in firebase
+
   const [currentNoteId, setCurrentNoteId] = useState(
       (notes[0]?.id) || "")
 
@@ -36,14 +38,22 @@ export default function App() {
 
 
   useEffect(() => {
-    //onSnapshot() listens to the firebase if there is a change in data
-    //if there is a change, it will run and update our local data
-    // onSnapshot() takes 2 arguments, 1st: the data we want to listen, 2nd: a callback func that calls when there is a change in our notesCollection
-    onSnapshot(notesCollection, (snapshot) => {
-
+    //onSnapshot() listen some changes in the firestore database and act accordingly in our local code
+    //if the request is a success like example deleting data or adding data, it will run and update our local data, if there is a failure then it wont run
+    // onSnapshot() has 2 parameters, 1st: the data we want to listen, 2nd: a callback func that runs when there is a change in the data we are listening
+    const unsubscribe = onSnapshot(notesCollection, (snapshot) => {  //receives snapshot of the data at the time this callback is called
+      // Sync up our local notes array with the snapshot data
+      const notesArr = snapshot.docs.map(doc => { // accessing the data in docs and mapping
+        return {
+          ...doc.data(), //firebase might return a different type of data
+          id: doc.id // docs has its own id so we are using it, therefore we wont need nanoid()
+        }
+      })
+      setNotes(notesArr)
     })
+    return unsubscribe; //stops from listening in the database so it wont keep running when the component is unmounted or closing the tab
 
-    //no longer uses localStorage
+    //no longer using localStorage 
     // saveToLocalStorage(notes)
     // if(!notes.length) {
     //   console.error("notes empty");
@@ -51,13 +61,20 @@ export default function App() {
     // }
   }, [/* notes */])
 
-  function createNewNote() {
-    const newNote: NewNoteType = {
-        id: nanoid(),
+  async function createNewNote() {
+    try {
+      const newNote: Partial<NewNoteType> = {
+        // id: nanoid(),
         body: "# Type your markdown note's title here"
+      }
+      //addDoc will be called to add the data in our firebase. takes 2 params (1st: where we want to push the document, 2nd: our new note obj )
+      const newNoteRef = await addDoc(notesCollection, newNote) //addDoc returns a promise and a reference to the doc we created
+      setCurrentNoteId(newNoteRef.id)
+      console.log(newNoteRef.id)
+    } catch {
+      throw new Error("Something went wrong");
     }
-    setNotes(prevNotes => [newNote, ...prevNotes])
-    setCurrentNoteId(newNote.id)
+    // setNotes(prevNotes => [newNote, ...prevNotes])
   }
   
   function updateNote(text: string) {
@@ -96,6 +113,7 @@ export default function App() {
   }
 
   const currentNote: NewNoteType = notes.find(note => {
+    console.log(note)
     return note.id === currentNoteId
   }) || notes[0]
   
@@ -123,8 +141,7 @@ export default function App() {
           deleteNote={deleteNote}
         />
         {
-          currentNoteId && 
-          notes.length > 0 &&
+          currentNoteId && notes.length > 0 &&
           <Editor 
             currentNote={currentNote} // replacing findCurrentNote() so it wont keep calling the fn because currentNote is already set with setCurrentNoteId()
             updateNote={updateNote} 
