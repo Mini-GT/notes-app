@@ -5,6 +5,8 @@ import Editor from "./components/Editor"
 import Split from "react-split"
 import {nanoid} from "nanoid"
 import { NewNoteType } from "./utility/types"
+import { onSnapshot } from "firebase/firestore"
+import { notesCollection } from "./backend/firebase"
 
 function loadFromStorage() {
   console.log("will only render once")
@@ -26,20 +28,28 @@ export default function App() {
   //this is usefull when we are loading that takes up a lot of work to do such as getting local storage or data from api
   const [notes, setNotes] = useState<NewNoteType[]>(() => loadFromStorage() || [])
   const [currentNoteId, setCurrentNoteId] = useState(
-      (notes[0] && notes[0].id) || ""
-  )
+      (notes[0]?.id) || "")
+
   //lazy load: example 2
   //it wont console.log every change in the component because we all know that react will re render every component when there is a change unless we use hooks like useMemo to handle a heavy task
   const [state, setState] = useState(() => console.log("State initialization")) 
-  
+
 
   useEffect(() => {
-    saveToLocalStorage(notes)
-    if(!notes.length) {
-      console.error("notes empty");
-      return
-    }
-  }, [notes])
+    //onSnapshot() listens to the firebase if there is a change in data
+    //if there is a change, it will run and update our local data
+    // onSnapshot() takes 2 arguments, 1st: the data we want to listen, 2nd: a callback func that calls when there is a change in our notesCollection
+    onSnapshot(notesCollection, (snapshot) => {
+
+    })
+
+    //no longer uses localStorage
+    // saveToLocalStorage(notes)
+    // if(!notes.length) {
+    //   console.error("notes empty");
+    //   return
+    // }
+  }, [/* notes */])
 
   function createNewNote() {
     const newNote: NewNoteType = {
@@ -84,12 +94,16 @@ export default function App() {
     //   return newNotes
     // })
   }
+
+  const currentNote: NewNoteType = notes.find(note => {
+    return note.id === currentNoteId
+  }) || notes[0]
   
-  function findCurrentNote() {
-    return notes.find(note => {
-      return note.id === currentNoteId
-    }) || notes[0]
-  }
+  // function findCurrentNote() {
+  //   return notes.find(note => {
+  //     return note.id === currentNoteId
+  //   }) || notes[0]
+  // }
   
   return (
     <main>
@@ -103,7 +117,7 @@ export default function App() {
       >
         <Sidebar
           notes={notes}
-          currentNote={findCurrentNote()}
+          currentNote={currentNote} // replacing findCurrentNote() so it wont keep calling the fn because currentNote is already set with setCurrentNoteId()
           setCurrentNoteId={setCurrentNoteId}
           newNote={createNewNote}
           deleteNote={deleteNote}
@@ -112,7 +126,7 @@ export default function App() {
           currentNoteId && 
           notes.length > 0 &&
           <Editor 
-            currentNote={findCurrentNote()} 
+            currentNote={currentNote} // replacing findCurrentNote() so it wont keep calling the fn because currentNote is already set with setCurrentNoteId()
             updateNote={updateNote} 
           />
         }
