@@ -3,9 +3,15 @@ import Sidebar from "./components/Sidebar"
 import Editor from "./components/Editor"
 // import { data } from "./data"
 import Split from "react-split"
-import {nanoid} from "nanoid"
+// import {nanoid} from "nanoid" 
 import { NewNoteType } from "./utility/types"
-import { onSnapshot, addDoc, doc, deleteDoc } from "firebase/firestore"
+import { 
+  onSnapshot, 
+  addDoc, 
+  doc, 
+  deleteDoc,
+  setDoc
+} from "firebase/firestore"
 import { notesCollection, db } from "./backend/firebase"
 
 function loadFromStorage() {
@@ -36,7 +42,6 @@ export default function App() {
   //it wont console.log every change in the component because we all know that react will re render every component when there is a change unless we use hooks like useMemo to handle a heavy task
   const [state, setState] = useState(() => console.log("State initialization")) 
 
-
   useEffect(() => {
     //onSnapshot() listen some changes in the firestore database and act accordingly in our local code
     //if the request is a success like example deleting data or adding data, it will run and update our local data, if there is a failure then it wont run
@@ -50,7 +55,6 @@ export default function App() {
         }
       })
       setNotes(notesArr)
-      setCurrentNoteId(notesArr[0].id)
     })
     return unsubscribe; //stops from listening in the database so it wont keep running when the component is unmounted or closing the tab
 
@@ -78,19 +82,22 @@ export default function App() {
     // setNotes(prevNotes => [newNote, ...prevNotes])
   }
   
-  function updateNote(text: string) {
-      // bumps the recent note at the top
-      setNotes(oldNotes => {
-        const newNotes: NewNoteType[] = [] // create new notes
-        oldNotes.map((note, index) => { // maps the note
-          if(note.id === currentNoteId) { // check if it matches the current note
-            newNotes.unshift({ ...oldNotes[index], body: text }) //adds the new/edited note to the top of the arr
-          } else {
-            newNotes.push(note) // if its not the edited note, adds to the last array
-          }
-        })
-        return newNotes;
-      })
+  async function updateNote(text: string) {
+    const docRef = doc(db, "notes", currentNoteId)
+    await setDoc(docRef, { body: text }, { merge: true })
+
+    // bumps the recent note at the top
+    // setNotes(oldNotes => {
+    //   const newNotes: NewNoteType[] = [] // create new notes
+    //   oldNotes.map((note, index) => { // maps the note
+    //     if(note.id === currentNoteId) { // check if it matches the current note
+    //       newNotes.unshift({ ...oldNotes[index], body: text }) //adds the new/edited note to the top of the arr
+    //     } else {
+    //       newNotes.push(note) // if its not the edited note, adds to the last array
+    //     }
+    //   })
+    //   return newNotes;
+    // })
 
     //doesnt bump the recent note at the top
     // setNotes(oldNotes => 
@@ -102,7 +109,6 @@ export default function App() {
   }
 
   async function deleteNote(noteId: string) {
-    console.log(noteId)
     try {
       // doc() helps us access to a single document
       const docRef = doc(db, "notes", noteId) // has 3 params, 1st: instance of db that we created in our firebase file, 2nd: name of our collection, 3rd: note id
@@ -151,7 +157,6 @@ export default function App() {
           deleteNote={deleteNote}
         />
         {
-          
           // currentNoteId && notes.length > 0 &&
           notes.length > 0 &&
           <Editor 
