@@ -5,8 +5,8 @@ import Editor from "./components/Editor"
 import Split from "react-split"
 import {nanoid} from "nanoid"
 import { NewNoteType } from "./utility/types"
-import { onSnapshot, addDoc, doc } from "firebase/firestore"
-import { notesCollection } from "./backend/firebase"
+import { onSnapshot, addDoc, doc, deleteDoc } from "firebase/firestore"
+import { notesCollection, db } from "./backend/firebase"
 
 function loadFromStorage() {
   console.log("will only render once")
@@ -28,7 +28,7 @@ export default function App() {
   //this is usefull when we are loading that takes up a lot of work to do such as getting local storage or data from api
   //const [notes, setNotes] = useState<NewNoteType[]>(() => loadFromStorage() || [])
   const [notes, setNotes] = useState<NewNoteType[]>([]) // we are now grabbing the data in firebase
-
+  
   const [currentNoteId, setCurrentNoteId] = useState(
       (notes[0]?.id) || "")
 
@@ -50,6 +50,7 @@ export default function App() {
         }
       })
       setNotes(notesArr)
+      setCurrentNoteId(notesArr[0].id)
     })
     return unsubscribe; //stops from listening in the database so it wont keep running when the component is unmounted or closing the tab
 
@@ -100,9 +101,19 @@ export default function App() {
     // }))
   }
 
-  function deleteNote(noteId: string) {
-    //a better approach when removing the selected note
-    setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
+  async function deleteNote(noteId: string) {
+    console.log(noteId)
+    try {
+      // doc() helps us access to a single document
+      const docRef = doc(db, "notes", noteId) // has 3 params, 1st: instance of db that we created in our firebase file, 2nd: name of our collection, 3rd: note id
+      await deleteDoc(docRef) // deleteDoc return a promise
+    } catch {
+      throw new Error('error deleting the note')
+    }
+    
+    
+    // a better approach when removing the selected note
+    // setNotes((oldNotes) => oldNotes.filter((note) => note.id !== noteId));
 
     // removes the note selected
     // setNotes((oldNotes) => {
@@ -113,7 +124,6 @@ export default function App() {
   }
 
   const currentNote: NewNoteType = notes.find(note => {
-    console.log(note)
     return note.id === currentNoteId
   }) || notes[0]
   
@@ -141,7 +151,9 @@ export default function App() {
           deleteNote={deleteNote}
         />
         {
-          currentNoteId && notes.length > 0 &&
+          
+          // currentNoteId && notes.length > 0 &&
+          notes.length > 0 &&
           <Editor 
             currentNote={currentNote} // replacing findCurrentNote() so it wont keep calling the fn because currentNote is already set with setCurrentNoteId()
             updateNote={updateNote} 
