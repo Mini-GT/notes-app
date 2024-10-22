@@ -128,6 +128,8 @@ export default function App() {
     } catch {
       throw new Error('error deleting the note')
     }
+
+
     
     
     // a better approach when removing the selected note
@@ -141,8 +143,7 @@ export default function App() {
     // })
   }
 
-  // const sortedNotes: NoteType[] = notes.sort((a, b) => b.updatedAt - a.updatedAt)
-  // console.log(sortedNotes)
+  const sortedNotes: NoteType[] = notes.sort((a, b) => b.updatedAt - a.updatedAt)
 
   const currentNote: NoteType = notes.find(note => {
     return note.id === currentNoteId
@@ -162,7 +163,7 @@ export default function App() {
         </div>
       );
     }
-    return null; // Until the message is ready, return nothing (null)
+    return null; // Until the createNote component is ready, return nothing (null)
   }
   
   // function findCurrentNote() {
