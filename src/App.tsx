@@ -183,7 +183,7 @@ export default function App() {
         className="split"
       >
         <Sidebar
-          notes={notes}
+          notes={sortedNotes}
           currentNote={currentNote} // replacing findCurrentNote() so it wont keep calling the fn because currentNote is already set with setCurrentNoteId()
           setCurrentNoteId={setCurrentNoteId}
           newNote={createNewNote}
