@@ -1,9 +1,9 @@
 import { Dispatch, SetStateAction } from "react"
-import { NewNoteType } from "../utility/types"
+import { NoteType } from "../utility/types"
 
 type SidebarType = {
-  notes: NewNoteType[]
-  currentNote: NewNoteType
+  notes: NoteType[]
+  currentNote: NoteType
   setCurrentNoteId: Dispatch<SetStateAction<string>>
   newNote: () => void
   deleteNote: (noteId: string) => void

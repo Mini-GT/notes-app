@@ -1,10 +1,10 @@
 import { useState } from "react";
 import ReactMde from "react-mde"
 import Showdown from "showdown";
-import { NewNoteType } from "../utility/types";
+import { NoteType } from "../utility/types";
 
 type EditorType = {
-  currentNote: NewNoteType
+  currentNote: NoteType
   updateNote: (text: string) => void
 }
 
