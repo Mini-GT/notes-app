@@ -3,13 +3,13 @@ import ReactMde from "react-mde"
 import Showdown from "showdown";
 import { NoteType } from "../utility/types";
 
-type EditorType = {
-  currentNote: NoteType
-  updateNote: (text: string) => void
-}
+// type EditorType = {
+//   currentNote: NoteType
+//   updateNote: (text: string) => void
+// }
 
 
-export default function Editor({ currentNote, updateNote }: EditorType) {
+export default function Editor({ tempNoteText, updateTempNoteText } /* : EditorType */) {
   const [selectedTab, setSelectedTab] = useState<"write" | "preview">("write")
 
   const converter = new Showdown.Converter({
@@ -22,8 +22,8 @@ export default function Editor({ currentNote, updateNote }: EditorType) {
   return (
     <section className="pane editor">
       <ReactMde
-        value={currentNote.body}
-        onChange={updateNote}
+        value={tempNoteText}
+        onChange={updateTempNoteText}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
         generateMarkdownPreview={(markdown) =>

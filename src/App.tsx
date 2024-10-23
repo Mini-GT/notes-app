@@ -1,10 +1,10 @@
-import { useState, useEffect, HtmlHTMLAttributes } from "react"
+import { useState, useEffect } from "react"
 import Sidebar from "./components/Sidebar"
 import Editor from "./components/Editor"
 // import { data } from "./data"
 import Split from "react-split"
 // import {nanoid} from "nanoid" 
-import { NoteType } from "./utility/types"
+import { NoteType, TempNoteType } from "./utility/types"
 import { 
   onSnapshot, 
   addDoc, 
@@ -13,7 +13,6 @@ import {
   setDoc
 } from "firebase/firestore"
 import { notesCollection, db } from "./backend/firebase"
-import CreateNote from "./components/CreateNote"
 
 function loadFromStorage() {
   console.log("will only render once")
@@ -35,14 +34,14 @@ export default function App() {
   //this is usefull when we are loading that takes up a lot of work to do such as getting local storage or data from api
   //const [notes, setNotes] = useState<NoteType[]>(() => loadFromStorage() || [])
   const [notes, setNotes] = useState<NoteType[]>([]) // we are now grabbing the data in firebase
-  
   const [currentNoteId, setCurrentNoteId] = useState(
-      (notes[0]?.id) || "")
-
+    (notes[0]?.id) || "")
+  
   //lazy load: example 2
   //it wont console.log every change in the component because we all know that react will re render every component when there is a change unless we use hooks like useMemo to handle a heavy task
   const [state, setState] = useState(() => console.log("State initialization")) 
   const [showCreateNote, setShowCreateNote] = useState(false);
+  const [tempNoteText, setTempNoteText] = useState<string>("")
 
   useEffect(() => {
     //onSnapshot() listen some changes in the firestore database and act accordingly in our local code
@@ -57,10 +56,12 @@ export default function App() {
         }
       })
       setNotes(notesArr)
+      setCurrentNoteId(notesArr[0]?.id)
     })
-    setTimeout(() => {
-      setShowCreateNote(true);
-    }, 2000);
+
+    // setTimeout(() => {
+    //   setShowCreateNote(true);
+    // }, 2000);
     return unsubscribe; //stops from listening in the database so it wont keep running when the component is unmounted or closing the tab
     //no longer using localStorage 
     // saveToLocalStorage(notes)
@@ -126,7 +127,7 @@ export default function App() {
       const docRef = doc(db, "notes", noteId) // has 3 params, 1st: instance of db that we created in our firebase file, 2nd: name of our collection, 3rd: note id
       await deleteDoc(docRef) // deleteDoc return a promise
     } catch {
-      throw new Error('error deleting the note')
+      throw new Error("error deleting the note")
     }
 
 
@@ -148,6 +149,15 @@ export default function App() {
   const currentNote: NoteType = notes.find(note => {
     return note.id === currentNoteId
   }) || notes[0]
+
+  useEffect(() => {
+    console.log('run first')
+    if(currentNote) {
+      setTempNoteText(currentNote.body)
+    } else {
+      throw new Error('currentNote is empty')
+    }
+  }, [currentNote])
 
   function renderCreateNote() {
     if (showCreateNote) {
@@ -171,6 +181,11 @@ export default function App() {
   //     return note.id === currentNoteId
   //   }) || notes[0]
   // }
+
+  function updateTempNoteText(text) {
+    setTempNoteText(text)
+    console.log(tempNoteText)
+  } 
   
   return (
     <main>
@@ -190,15 +205,27 @@ export default function App() {
           deleteNote={deleteNote}
         />
         {
-          currentNoteId && notes.length > 0 ?
+          // currentNoteId && notes.length > 0 &&
           // notes.length > 0 &&
           <Editor 
-            currentNote={currentNote} // replacing findCurrentNote() so it wont keep calling the fn because currentNote is already set with setCurrentNoteId()
-            updateNote={updateNote} 
-          /> : <CreateNote />
+            // currentNote={currentNote} // replacing findCurrentNote() so it wont keep calling the fn because currentNote is already set with setCurrentNoteId()
+            // updateNote={updateNote} 
+            tempNoteText={tempNoteText} // replacing findCurrentNote() so it wont keep calling the fn because currentNote is already set with setCurrentNoteId()
+            updateTempNoteText={updateTempNoteText} 
+          />
         }
       </Split>
-      : renderCreateNote()
+      : 
+      // renderCreateNote()
+      <div className="no-notes">
+        <h1>You have no notes</h1>
+        <button 
+          className="first-note" 
+          onClick={createNewNote}
+        >
+          Create one now
+        </button>
+      </div>
     }
     </main>
   )
