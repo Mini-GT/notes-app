@@ -14,7 +14,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app)
 
-//finds the collection in firabse db in firbase collection 
-//and passing db inside to know which db it is inside the firebase
-//then passing the string name "notes" that i want to grab
+// collection() helps us access to collection. finds the collection in firebase db from firebase collection 
+// and passing db inside to know which db it is inside the firebase
+// then passing the string name "notes" that i want to grab
 export const notesCollection = collection(db, "notes")
